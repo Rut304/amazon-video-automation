@@ -4,7 +4,7 @@ import os
 
 def generate_voice(script_text, filename="outputs/voice.mp3"):
     api_key = os.getenv("ELEVENLABS_API_KEY")
-    voice_id = "Rachel"  # Default ElevenLabs voice
+    voice_id = "EXAVITQu4vr4xnSDxMaL"
 
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
 
