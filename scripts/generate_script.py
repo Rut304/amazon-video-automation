@@ -1,8 +1,10 @@
-# generate_script.py
+# scripts/generate_script.py
+
 import openai
 import os
 
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Set your OpenAI API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_video_script(products):
     prompt = f"""Compare the following 3 Amazon products in a short YouTube script:
@@ -14,9 +16,12 @@ def generate_video_script(products):
 Make it engaging and under 100 words. End with a recommendation.
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4.1",
-        messages=[{"role": "user", "content": prompt}],
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         temperature=0.7,
     )
-    return response.choices[0].message.content.strip()
+
+    return response.choices[0].message["content"].strip()
