@@ -1,39 +1,36 @@
-name: Generate Product Comparison Video Script
+# scripts/create_video.py
 
-on:
-  workflow_dispatch:
+from moviepy.editor import *
+import os
 
-jobs:
-  generate-script:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+def create_video(voice_path, output_path="outputs/final_video.mp4"):
+    # Load voiceover audio
+    audio = AudioFileClip(voice_path)
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    # Duration of the video = length of the voiceover
+    duration = audio.duration
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg imagemagick
+    # Use placeholder image
+    image_path = "assets/placeholder.jpg"
+    if not os.path.exists(image_path):
+        raise FileNotFoundError("Missing placeholder.jpg in /assets")
 
-      - name: Clean any cached packages
-        run: |
-          pip cache purge
+    # Create video clip from image
+    image_clip = (
+        ImageClip(image_path)
+        .set_duration(duration)
+        .resize(height=1080)  # Resize image to fit video height
+        .set_position("center")
+        .set_fps(30)
+        .fadein(1)
+        .fadeout(1)
+    )
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    # Combine image + audio
+    final_clip = image_clip.set_audio(audio)
 
-      - name: Show installed packages
-        run: pip list
+    # Export to file
+    os.makedirs("outputs", exist_ok=True)
+    final_clip.write_videofile(output_path, fps=30, codec="libx264", audio_codec="aac")
 
-      - name: Run script
-        run: python scripts/automate.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+    return output_path
