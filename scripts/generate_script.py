@@ -15,7 +15,7 @@ Make it engaging and under 100 words. End with a recommendation.
 """
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
