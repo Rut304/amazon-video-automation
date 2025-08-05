@@ -4,38 +4,34 @@ from generate_script import generate_video_script
 from generate_voice import generate_voice
 from generate_description import generate_video_description
 from create_video import create_video
-from download_image import download_product_image
-
-OUTPUT_DIR = "outputs"
-ASSETS_DIR = "assets"
+from download_image import download_amazon_image
 
 def main():
-    print("🚀 Starting automation...")
+    print("🚀 Starting automation...\n")
 
-    # Step 1: Fetch Products
+    # Step 1: Fetch product data
     products = fetch_products()
-
-    # Step 2: Display Products
     print("📦 Products Compared:")
     for p in products:
         print(f"- {p['title']} | ${p['price']} | Rating: {p['rating']}")
+    print()
 
-    # Step 3: Generate Script
+    # Step 2: Generate video script
     script = generate_video_script(products)
     print("🎬 Video Script:")
     print(script)
+    print()
 
-    # Step 4: Generate Voiceover
+    # Step 3: Generate voiceover
     voice_path = generate_voice(script)
     print(f"✅ Voice saved to {voice_path}")
 
-    # Step 5: Download Images
+    # Step 4: Download product images
     product_images = []
-    os.makedirs(ASSETS_DIR, exist_ok=True)
-
-    for i, product in enumerate(products):
-        image_path = os.path.join(ASSETS_DIR, f"product{i+1}.jpg")
-        result = download_product_image(product["url"], product["title"], image_path)
+    os.makedirs("assets", exist_ok=True)
+    for i, product in enumerate(products, start=1):
+        image_path = f"assets/product{i}.jpg"
+        result = download_amazon_image(product["url"], product["title"], image_path)
         if result:
             product_images.append(image_path)
         else:
@@ -44,16 +40,15 @@ def main():
     if not product_images:
         raise RuntimeError("❌ No valid images were processed. Aborting video creation.")
 
-    # Step 6: Create Video
+    # Step 5: Create video
     video_path = create_video(voice_path, product_images, products)
     print(f"✅ Video saved to {video_path}")
 
-    # Step 7: Generate Description
+    # Step 6: Generate description
     description = generate_video_description(products)
-    desc_path = os.path.join(OUTPUT_DIR, "description.txt")
-    with open(desc_path, "w") as f:
+    with open("outputs/description.txt", "w") as f:
         f.write(description)
-    print(f"✅ Description saved to {desc_path}")
+    print("✅ Description saved to outputs/description.txt")
 
 
 if __name__ == "__main__":
