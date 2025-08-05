@@ -1,44 +1,65 @@
 # scripts/create_video.py
 
-from moviepy.editor import (
-    ImageClip, AudioFileClip, CompositeVideoClip, TextClip, concatenate_videoclips
-)
 import os
+from moviepy.editor import (
+    AudioFileClip,
+    ImageClip,
+    concatenate_videoclips,
+    CompositeVideoClip,
+)
+from PIL import Image
 
-def create_video(voice_path, product_images, products, music_path="assets/music.mp3"):
-    duration_per_image = 4  # seconds
-    clips = []
+def create_video(voice_path, product_images, products):
+    from moviepy.editor import TextClip
 
-    # Generate one clip per product
-    for i, (image_path, product) in enumerate(zip(product_images, products)):
-        product_text = f"{product['title']}\n{product['price']} | ⭐ {product['rating']}"
-        
-        image_clip = (
-            ImageClip(image_path)
-            .set_duration(duration_per_image)
-            .resize(height=1920)  # portrait
-            .set_position("center")
-        )
+    # Set up output paths
+    os.makedirs("outputs", exist_ok=True)
+    image_clips = []
+    duration_per_image = 5  # seconds
 
-        text_clip = (
-            TextClip(product_text, fontsize=60, color="white", bg_color="black", method="caption", size=(1000, None))
-            .set_position(("center", 1600))
-            .set_duration(duration_per_image)
-        )
+    for i, image_path in enumerate(product_images):
+        try:
+            image_clip = (
+                ImageClip(image_path)
+                .set_duration(duration_per_image)
+                .resize(height=1080)
+                .set_position("center")
+            )
 
-        composite = CompositeVideoClip([image_clip, text_clip], size=(1080, 1920))
-        clips.append(composite)
+            # Add text overlay
+            product = products[i]
+            text = f"{product['title']}\n${product['price']} | ⭐ {product['rating']}"
+            text_clip = (
+                TextClip(text, fontsize=50, color="white", font="Arial-Bold", method="caption", size=(1080, None))
+                .set_duration(duration_per_image)
+                .set_position(("center", "bottom"))
+            )
 
-    final_clip = concatenate_videoclips(clips, method="compose")
+            # Combine image and text
+            combined = CompositeVideoClip([image_clip, text_clip])
+            image_clips.append(combined)
 
-    voiceover = AudioFileClip(voice_path)
-    final_clip = final_clip.set_audio(voiceover)
+        except Exception as e:
+            print(f"Error processing image {image_path}: {e}")
 
-    # Add background music if exists
+    # Combine all image clips
+    video = concatenate_videoclips(image_clips, method="compose")
+
+    # Add voiceover
+    audio = AudioFileClip(voice_path)
+    video = video.set_audio(audio)
+
+    # Add background music if available
+    music_path = "assets/music.mp3"
     if os.path.exists(music_path):
-        music = AudioFileClip(music_path).volumex(0.1)
-        final_clip = final_clip.set_audio(voiceover.audio_fadein(0.5).audio_fadeout(0.5).fx(lambda a: a.set_duration(final_clip.duration)))
-    
+        from moviepy.editor import AudioFileClip, CompositeAudioClip
+
+        music = AudioFileClip(music_path).volumex(0.2).set_duration(video.duration)
+        final_audio = CompositeAudioClip([audio, music])
+        video = video.set_audio(final_audio)
+
+    # Export final video
     output_path = "outputs/final_video.mp4"
-    final_clip.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
+    video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
+
     return output_path
