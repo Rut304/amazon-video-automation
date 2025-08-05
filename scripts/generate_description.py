@@ -1,19 +1,10 @@
-# scripts/generate_description.py
+def generate_video_description(products):
+    lines = ["Check out the top 3 products featured in this video:\n"]
 
-AFFILIATE_TAG = "1705d0-20"
+    for product in products:
+        line = f"{product['title']} – ${product['price']} – Rated {product['rating']} stars\n{product['url']}\n"
+        lines.append(line)
 
-def generate_description(products):
-    lines = ["🔥 Top 3 Amazon Picks:"]
-    for i, product in enumerate(products, 1):
-        title = product["title"]
-        price = product["price"]
-        rating = product["rating"]
-        asin = product["asin"]
-        url = f"https://www.amazon.com/dp/{asin}?tag={AFFILIATE_TAG}"
+    lines.append("\nDon't forget to like 👍, comment 💬, and subscribe 🔔 for more reviews!")
 
-        lines.append(f"{i}) {title} - {price} ⭐ {rating}")
-        lines.append(f"👉 {url}")
-        lines.append("")  # Blank line between products
-
-    lines.append("Disclosure: These are affiliate links. I may earn a small commission at no cost to you.")
     return "\n".join(lines)
