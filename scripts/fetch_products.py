@@ -1,7 +1,7 @@
 # scripts/fetch_products.py
 
 def fetch_top_amazon_products():
-    # Mock product data — in a real version, this would come from scraping or an API
+    # Mock product data with titles, prices, ratings, ASINs, and images
     return [
         {
             "title": "Logitech MX Master 3",
@@ -18,4 +18,10 @@ def fetch_top_amazon_products():
             "image": "https://m.media-amazon.com/images/I/71ZhJyN7nKL._AC_SL1500_.jpg"
         },
         {
-            "title": "C
+            "title": "Corsair Harpoon RGB Wireless",
+            "price": "$49.99",
+            "rating": 4.4,
+            "asin": "B07D5S3Q36",
+            "image": "https://m.media-amazon.com/images/I/61kYKD5KpDL._AC_SL1500_.jpg"
+        }
+    ]
