@@ -1,10 +1,10 @@
 import os
 import re
+import json
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
-
 
 def download_amazon_image(product_url, output_path):
     headers = {
@@ -22,17 +22,14 @@ def download_amazon_image(product_url, output_path):
 
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Find all script tags and search for image URL in JSON
-        image_url = None
-        for script in soup.find_all("script"):
-            if script.string and 'ImageBlockATF' in script.string:
-                matches = re.findall(r'"hiRes":"(https:[^\"]+?)"', script.string)
-                if matches:
-                    image_url = matches[0]
-                    break
-
-        if not image_url:
-            raise Exception("No high-res image URL found on product page.")
+        # ✅ Try modern fallback: Look for data-a-dynamic-image
+        img_tag = soup.find("img", {"data-a-dynamic-image": True})
+        if img_tag:
+            data = img_tag["data-a-dynamic-image"]
+            json_data = json.loads(data.replace("'", "\""))
+            image_url = list(json_data.keys())[0]  # Take the first image
+        else:
+            raise Exception("No image found using dynamic-image method.")
 
         print(f"📸 Found image URL: {image_url}")
 
@@ -50,7 +47,7 @@ def download_amazon_image(product_url, output_path):
 
 
 if __name__ == "__main__":
-    # Example usage for manual testing
-    test_url = "https://www.amazon.com/dp/B07YFP8KV3"
+    # Example usage
     os.makedirs("assets", exist_ok=True)
+    test_url = "https://www.amazon.com/dp/B07YFP8KV3"
     download_amazon_image(test_url, "assets/test_image.jpg")
