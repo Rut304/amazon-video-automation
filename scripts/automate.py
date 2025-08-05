@@ -10,29 +10,34 @@ from generate_description import generate_description
 def main():
     print("🚀 Starting automation...\n")
 
-    # Step 1: Fetch product data
     products = fetch_top_amazon_products()
-
     print("📦 Products Compared:")
     for product in products:
         print(f"- {product['title']} | {product['price']} | Rating: {product['rating']}")
 
-    # Step 2: Generate video script
     script = generate_video_script(products)
     print("\n🎬 Video Script:\n" + script)
 
-    # Step 3: Generate voiceover
-    voice_file = generate_voice(script)
-    print(f"✅ Voice saved to {voice_file}")
+    voice_path = generate_voice(script)
+    print(f"✅ Voice saved to {voice_path}")
 
-    # Step 4: Generate video
-    video_file = create_video(voice_file)
-    print(f"✅ Video saved to {video_file}")
+    product_images = [
+        "assets/placeholder.jpg",
+        "assets/placeholder2.jpg",
+        "assets/placeholder3.jpg"
+    ]
 
-    # Step 5: Generate description with affiliate links
+    video_path = create_video(voice_path, product_images, products)
+    print(f"✅ Video saved to {video_path}")
+
     description = generate_description(products)
     print("\n📝 Video Description:\n" + description)
 
     os.makedirs("outputs", exist_ok=True)
     with open("outputs/description.txt", "w") as f:
         f.write(description)
+
+    print("\n✅ All steps completed!")
+
+if __name__ == "__main__":
+    main()
