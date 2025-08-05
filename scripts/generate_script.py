@@ -1,19 +1,11 @@
 def generate_video_script(products):
-    hook = (
-        "[Hook] "
-        "\"Looking for the perfect gaming weapon to level up your skills? "
-        "Let's dive into a quick comparison of the top 3 gaming mice that are dominating Amazon right now!\""
-    )
+    hook = "[Hook] \"Looking for the perfect gaming weapon to level up your skills? Let's dive into a quick comparison of the top 3 gaming mice that are dominating Amazon right now!\""
 
     body_lines = [
-        f"[Body] \"{product['name']} - ${product['price']} - Rating: {product['rating']}\""
+        f"[Body] \"{product['title']} - ${product['price']} - Rating: {product['rating']}\""
         for product in products
     ]
 
-    call_to_action = (
-        "[Call-to-action] "
-        "\"So, whether you're into precision, speed, or wireless freedom, there's something for everyone! "
-        "Check the links in the description to explore these gaming mice and see which one ticks all your boxes. Game on!\""
-    )
+    cta = "[Call-to-action] \"So, whether you're into precision, speed, or wireless freedom, there's something for everyone! Check the links in the description to explore these gaming mice and see which one ticks all your boxes. Game on!\""
 
-    return "\n".join([hook] + body_lines + [call_to_action])
+    return "\n".join([hook] + body_lines + [cta])
