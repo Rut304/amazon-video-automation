@@ -1,24 +1,21 @@
 def fetch_products():
     return [
         {
-            "title": "Logitech MX Master 3",
+            "name": "Logitech MX Master 3",
             "price": 89.99,
             "rating": 4.7,
             "url": "https://www.amazon.com/dp/B07YFP8KV3",
-            "image": "https://m.media-amazon.com/images/I/61ni3t1ryQL._AC_SL1500_.jpg"
         },
         {
-            "title": "Razer DeathAdder V2",
+            "name": "Razer DeathAdder V2",
             "price": 59.00,
             "rating": 4.6,
             "url": "https://www.amazon.com/dp/B082G5SPR5",
-            "image": "https://m.media-amazon.com/images/I/61do9M1kFUL._AC_SL1500_.jpg"
         },
         {
-            "title": "Corsair Harpoon RGB Wireless",
+            "name": "Corsair Harpoon RGB Wireless",
             "price": 49.99,
             "rating": 4.4,
             "url": "https://www.amazon.com/dp/B07X9VG6Z4",
-            "image": "https://m.media-amazon.com/images/I/61Ma3YRTbYL._AC_SL1500_.jpg"
         },
     ]
