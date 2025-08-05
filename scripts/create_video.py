@@ -1,56 +1,42 @@
 import os
 from moviepy.editor import (
-    AudioFileClip,
     ImageClip,
+    AudioFileClip,
     concatenate_videoclips,
 )
 from PIL import Image
+import numpy as np
 
-def create_video(voice_path, product_images, products):
-    print("🎞️ Creating video...")
+def create_video(voice_path, image_paths, products):
+    clips = []
 
-    image_clips = []
-    duration_per_clip = 3  # seconds
-
-    for i, image_path in enumerate(product_images):
+    for idx, image_path in enumerate(image_paths):
         try:
-            if not os.path.exists(image_path):
-                raise FileNotFoundError(f"Image not found: {image_path}")
+            # Convert image to RGB and save temp version
+            img = Image.open(image_path).convert("RGB")
+            img = img.resize((1080, 1080))  # Ensures consistent size
 
-            # Verify image is valid
-            with Image.open(image_path) as img:
-                img.verify()
-
-            image_clip = (
-                ImageClip(image_path)
-                .set_duration(duration_per_clip)
-                .resize(height=1080)
-                .fadein(1)
-                .fadeout(1)
-            )
-            image_clips.append(image_clip)
+            # Convert to numpy array for MoviePy
+            img_array = np.array(img)
+            clip = ImageClip(img_array).set_duration(5)
+            clips.append(clip)
 
         except Exception as e:
             print(f"❌ Error processing image {image_path}: {e}")
 
-    if not image_clips:
+    if not clips:
         raise RuntimeError(
-            "❌ No valid images were processed. Make sure placeholder images exist and Pillow is pinned to a compatible version like 9.5.0."
+            "❌ No valid images were processed. Make sure placeholder images exist "
+            "and Pillow is pinned to a compatible version like 9.5.0."
         )
 
-    video = concatenate_videoclips(image_clips, method="compose")
+    video = concatenate_videoclips(clips, method="compose")
 
-    # Add voice-over
     audio = AudioFileClip(voice_path)
     video = video.set_audio(audio)
-    video = video.set_duration(audio.duration)
 
-    # Ensure output directory exists
-    output_dir = "outputs"
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, "final_video.mp4")
-
-    # Export video
+    os.makedirs("outputs", exist_ok=True)
+    output_path = "outputs/final_video.mp4"
     video.write_videofile(output_path, fps=24)
 
     print(f"✅ Video saved to {output_path}")
