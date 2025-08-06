@@ -1,8 +1,17 @@
+# -*- coding: utf-8 -*-
 def generate_video_script(products):
-    hook = "[Hook] \"Looking for the perfect gaming weapon to level up your skills? Let's dive into a quick comparison of the top 3 gaming mice that are dominating Amazon right now!\""
-    body_lines = [
-        f"[Body] \"{product['title']} - ${product['price']} - Rating: {product['rating']}\""
-        for product in products
-    ]
-    cta = "[Call-to-action] \"So, whether you're into precision, speed, or wireless freedom, there's something for everyone! Check the links in the description to explore these gaming mice and see which one ticks all your boxes. Game on!\""
-    return "\n".join([hook] + body_lines + [cta])
+    for p in products:
+        if not all(key in p for key in ['title', 'price', 'rating', 'url']):
+            raise ValueError(f"Missing field in product: {p}")
+
+    script = "🔥 Top 3 Amazon Picks Over $40!\n\n"
+
+    for i, product in enumerate(products, start=1):
+        script += f"🔹 {i}. {product['title']}\n"
+        script += f"💲 Price: ${product['price']}\n"
+        script += f"⭐ Rating: {product['rating']} stars\n"
+        script += f"👉 Check it out: {product['url']}\n\n"
+
+    script += "💬 Comment below which one you'd choose!\n"
+    script += "🔔 Follow for more daily Amazon finds!"
+    return script
