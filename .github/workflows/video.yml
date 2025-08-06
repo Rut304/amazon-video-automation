@@ -14,7 +14,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.10'  # ✅ Leave as-is unless you want to upgrade
 
       - name: 🧪 Install dependencies
         run: |
@@ -30,5 +30,6 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}   # ✅ Added line
         run: |
           python scripts/automate.py
