@@ -1,33 +1,25 @@
 import os
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+def generate_voice(script_text):
+    elevenlabs_key = os.getenv("ELEVENLABS_API_KEY")
+    if not elevenlabs_key:
+        raise Exception("ELEVENLABS_API_KEY is missing from environment.")
 
-def generate_voice(script: str) -> str:
-    api_key = os.getenv("ELEVENLABS_API_KEY")
-    voice_id = "21m00Tcm4TlvDq8ikWAM"  # default "Rachel"
-
-    if not api_key:
-        raise Exception("❌ ELEVENLABS_API_KEY is not set.")
-
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"  # Use a real voice ID
     headers = {
-        "xi-api-key": api_key,
-        "Content-Type": "application/json",
+        "xi-api-key": elevenlabs_key,
+        "Content-Type": "application/json"
     }
-    data = {
-        "text": script,
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
+    payload = {
+        "text": script_text,
+        "model_id": "eleven_monolingual_v1"
     }
-
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code != 200:
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        voice_path = "outputs/voice.mp3"
+        with open(voice_path, "wb") as f:
+            f.write(response.content)
+        return voice_path
+    else:
         raise Exception(f"Voice generation failed: {response.text}")
-
-    output_path = "outputs/voice.mp3"
-    with open(output_path, "wb") as f:
-        f.write(response.content)
-
-    return output_path
