@@ -1,57 +1,51 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
 from serpapi import GoogleSearch
 
-load_dotenv()
-
-def download_amazon_image(url: str, title: str, output_path: str) -> bool:
+def download_amazon_image(url, title, save_path):
     try:
         headers = {
             "User-Agent": "Mozilla/5.0"
         }
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        image_tag = soup.find("img", {"id": "landingImage"}) or soup.find("img", {"data-old-hires": True})
-
-        if image_tag and image_tag.get("src"):
-            image_url = image_tag["src"]
-            img_data = requests.get(image_url).content
-            with open(output_path, "wb") as f:
-                f.write(img_data)
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.content, "html.parser")
+        img_tag = soup.select_one("img[data-a-dynamic-image]")
+        if img_tag:
+            dynamic_image = img_tag["data-a-dynamic-image"]
+            image_url = list(eval(dynamic_image).keys())[0]
+            image_data = requests.get(image_url).content
+            with open(save_path, "wb") as f:
+                f.write(image_data)
             return True
         else:
             print("❌ Amazon image failed: No image found using dynamic-image method.")
-            return download_fallback_image(title, output_path)
     except Exception as e:
-        print(f"❌ Error downloading image: {e}")
-        return download_fallback_image(title, output_path)
+        print(f"❌ Amazon image error: {e}")
 
-def download_fallback_image(title: str, output_path: str) -> bool:
-    serp_api_key = os.getenv("SERPAPI_API_KEY")
-    if not serp_api_key:
+    # Fallback: use SerpAPI
+    serpapi_key = os.getenv("SERPAPI_API_KEY")
+    if not serpapi_key:
         print("❌ No SERPAPI_API_KEY set. Cannot use fallback.")
         return False
 
-    print(f"🔍 Searching fallback image with SerpAPI for: {title}")
     try:
+        print(f"🔍 Searching fallback image with SerpAPI for: {title}")
         search = GoogleSearch({
             "q": title,
             "tbm": "isch",
-            "api_key": serp_api_key
+            "api_key": serpapi_key
         })
         results = search.get_dict()
-        images = results.get("images_results", [])
-        if not images:
+        if "images_results" in results and results["images_results"]:
+            image_url = results["images_results"][0]["original"]
+            image_data = requests.get(image_url).content
+            with open(save_path, "wb") as f:
+                f.write(image_data)
+            return True
+        else:
             print("❌ SerpAPI image failed: No images found in SerpAPI results.")
             return False
-
-        img_url = images[0]["original"]
-        img_data = requests.get(img_url).content
-        with open(output_path, "wb") as f:
-            f.write(img_data)
-        return True
     except Exception as e:
-        print(f"❌ Fallback image error: {e}")
+        print(f"❌ SerpAPI fallback failed: {e}")
         return False
