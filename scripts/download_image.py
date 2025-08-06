@@ -90,14 +90,18 @@ def download_amazon_image(product_url, filename):
 
     print(f"📥 Downloading image for: {product_url}")
 
+    # Step 1: Try scraping Amazon page
     if get_image_from_amazon(product_url, image_path):
         return image_path
 
+    # Step 2: Try CDN fallback
     if asin and get_image_from_cdn(asin, image_path):
         return image_path
 
+    # Step 3: Try SerpAPI search
     title_query = asin if not asin else f"amazon {asin}"
     if get_image_from_serpapi(title_query, image_path):
         return image_path
 
+    # Final failure
     raise FileNotFoundError("❌ No valid product image found from any method.")
