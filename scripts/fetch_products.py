@@ -1,11 +1,11 @@
 def fetch_products():
-    # Dummy placeholder; your real implementation should provide actual values.
+    # Hardcoded sample (can be replaced with API logic)
     return [
         {
             "title": "Logitech MX Master 3",
             "price": 89.99,
             "rating": 4.7,
-            "url": "https://www.amazon.com/dp/B07XC2FWD1"
+            "url": "https://www.amazon.com/dp/B07YFP8KV3"
         },
         {
             "title": "Razer DeathAdder V2",
@@ -17,6 +17,6 @@ def fetch_products():
             "title": "Corsair Harpoon RGB Wireless",
             "price": 49.99,
             "rating": 4.4,
-            "url": "https://www.amazon.com/dp/B07KQWR72L"
+            "url": "https://www.amazon.com/dp/B07KQWR72M"
         }
     ]
