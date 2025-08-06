@@ -42,9 +42,9 @@ def main():
         voice_path = generate_voice(script)
         print(f"✅ Voice saved to {voice_path}")
 
-        # Step 4: Download images
+        # Step 4: Download images with fallback
         for i, product in enumerate(products):
-            image_path = download_amazon_image(product['url'], f"product_{i+1}.jpg")
+            image_path = download_amazon_image(product['url'], f"product_{i+1}.jpg", product['title'])
             product['image_path'] = image_path
             print(f"🖼️ Image downloaded for: {product['title']}")
 
