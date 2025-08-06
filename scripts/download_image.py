@@ -1,52 +1,39 @@
+# -*- coding: utf-8 -*-
 import os
 import requests
+from PIL import Image, ImageOps
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from serpapi import GoogleSearch
 
-def download_amazon_image(product_url, product_title, save_path):
+def download_amazon_image(product_url, filename):
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
     try:
-        # Attempt 1: Get image directly from Amazon page
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
-        response = requests.get(product_url, headers=headers)
+        response = requests.get(product_url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
-        image_tag = soup.find("img", {"class": "a-dynamic-image"})
-        if image_tag and image_tag.get("src"):
-            img_url = image_tag["src"]
-            img_data = requests.get(img_url).content
-            with open(save_path, "wb") as handler:
-                handler.write(img_data)
-            return True
-        else:
-            print("❌ Amazon image failed: No image found using dynamic-image method.")
-    except Exception as e:
-        print(f"❌ Amazon image error: {e}")
+        img_tag = soup.select_one("#imgTagWrapperId img")
 
-    # Attempt 2: Fallback to SerpAPI
-    serpapi_key = os.getenv("SERPAPI_API_KEY")
-    if not serpapi_key:
-        print("❌ No SERPAPI_API_KEY set. Cannot use fallback.")
-        return False
+        if not img_tag or not img_tag.get("src"):
+            raise Exception("No valid image found.")
 
-    try:
-        print(f"🔍 Searching fallback image with SerpAPI for: {product_title}")
-        params = {
-            "engine": "google_images",
-            "q": product_title,
-            "api_key": serpapi_key,
-            "num": 1
-        }
-        search = GoogleSearch(params)
-        results = search.get_dict()
-        if "images_results" in results and len(results["images_results"]) > 0:
-            img_url = results["images_results"][0]["original"]
-            img_data = requests.get(img_url).content
-            with open(save_path, "wb") as handler:
-                handler.write(img_data)
-            return True
-        else:
-            print("❌ SerpAPI image failed: No images found in SerpAPI results.")
+        image_url = img_tag["src"]
+        img_data = requests.get(image_url, headers=headers).content
+
+        os.makedirs("images", exist_ok=True)
+        image_path = os.path.join("images", filename)
+
+        with open(image_path, "wb") as f:
+            f.write(img_data)
+
+        # Crop or pad to square using Pillow
+        img = Image.open(image_path)
+        img = ImageOps.fit(img, (max(img.size), max(img.size)), Image.ANTIALIAS)
+        img.save(image_path)
+
+        return image_path
+
     except Exception as e:
-        print(f"❌ SerpAPI error: {e}")
-    return False
+        print(f"❌ Failed to download image for {product_url}: {e}")
+        return "images/placeholder.jpg"
