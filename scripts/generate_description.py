@@ -1,10 +1,6 @@
 def generate_video_description(products):
-    lines = ["Check out the top 3 products featured in this video:\n"]
-
+    lines = ["Here are the top 3 gaming mice on Amazon:\n"]
     for product in products:
-        line = f"{product['title']} – ${product['price']} – Rated {product['rating']} stars\n{product['url']}\n"
-        lines.append(line)
-
-    lines.append("\nDon't forget to like 👍, comment 💬, and subscribe 🔔 for more reviews!")
-
+        lines.append(f"- {product['title']}: ${product['price']} ({product['rating']}⭐)")
+        lines.append(f"  Buy now: {product['url']}\n")
     return "\n".join(lines)
