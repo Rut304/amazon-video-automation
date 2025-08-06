@@ -2,7 +2,7 @@
 import os
 import re
 import requests
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, UnidentifiedImageError
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -15,20 +15,26 @@ def crop_to_square(image_path):
     img = ImageOps.fit(img, (max(img.size), max(img.size)), Image.ANTIALIAS)
     img.save(image_path)
 
-def extract_asin(url):
-    match = re.search(r"/dp/([A-Z0-9]{10})", url)
-    return match.group(1) if match else None
-
 def download_image(url, save_path):
     try:
-        response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, timeout=10, headers=headers)
+
+        # Check if response is actually an image
+        content_type = response.headers.get("Content-Type", "")
+        if "image" not in content_type:
+            raise Exception(f"URL did not return an image. Content-Type: {content_type}")
+
         with open(save_path, "wb") as f:
             f.write(response.content)
+
         crop_to_square(save_path)
         return True
+    except UnidentifiedImageError:
+        print(f"❌ Pillow could not identify image: {save_path}")
     except Exception as e:
         print(f"❌ Failed to download image from {url}: {e}")
-        return False
+    return False
 
 def get_image_from_amazon(product_url, save_path):
     try:
@@ -55,14 +61,6 @@ def get_image_from_amazon(product_url, save_path):
         print(f"❌ Error scraping Amazon page: {e}")
         return False
 
-def get_image_from_cdn(asin, save_path):
-    try:
-        cdn_url = f"https://m.media-amazon.com/images/I/{asin}.jpg"
-        print(f"➡️ Trying CDN image: {cdn_url}")
-        return download_image(cdn_url, save_path)
-    except:
-        return False
-
 def get_image_from_serpapi(query, save_path):
     try:
         print(f"🔍 Searching SerpAPI for: {query}")
@@ -83,10 +81,9 @@ def get_image_from_serpapi(query, save_path):
         print(f"❌ SerpAPI image fetch failed: {e}")
     return False
 
-def download_amazon_image(product_url, filename):
+def download_amazon_image(product_url, filename, product_title=None):
     os.makedirs("images", exist_ok=True)
     image_path = os.path.join("images", filename)
-    asin = extract_asin(product_url)
 
     print(f"📥 Downloading image for: {product_url}")
 
@@ -94,14 +91,8 @@ def download_amazon_image(product_url, filename):
     if get_image_from_amazon(product_url, image_path):
         return image_path
 
-    # Step 2: Try CDN fallback
-    if asin and get_image_from_cdn(asin, image_path):
+    # Step 2: Try SerpAPI search using product title
+    if product_title and get_image_from_serpapi(product_title, image_path):
         return image_path
 
-    # Step 3: Try SerpAPI search
-    title_query = asin if not asin else f"amazon {asin}"
-    if get_image_from_serpapi(title_query, image_path):
-        return image_path
-
-    # Final failure
     raise FileNotFoundError("❌ No valid product image found from any method.")
