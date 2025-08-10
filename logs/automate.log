@@ -1,0 +1,4 @@
+2025-08-10 18:06:47,648 - INFO - Automation started.
+2025-08-10 18:06:47,648 - ERROR - Automation failed: ELEVENLABS_API_KEY is not set. Export it before running.
+2025-08-10 18:11:26,707 - INFO - Automation started.
+2025-08-10 18:11:26,707 - ERROR - Automation failed: ELEVENLABS_API_KEY is not set. Export it before running.
