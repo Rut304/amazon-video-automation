@@ -1,5 +1,13 @@
 # verify_video.py
+import os
 from moviepy.editor import VideoFileClip
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+def _abs_path(path: str) -> str:
+    return path if os.path.isabs(path) else os.path.join(PROJECT_ROOT, path)
+
 
 def verify_video(video_path: str) -> bool:
     """
@@ -7,7 +15,8 @@ def verify_video(video_path: str) -> bool:
     Returns True if OK, otherwise False.
     """
     try:
-        clip = VideoFileClip(video_path)
+        vpath = _abs_path(video_path)
+        clip = VideoFileClip(vpath)
         duration_ok = clip.duration is not None and clip.duration > 0
         has_audio = clip.audio is not None and (clip.audio.duration or 0) > 0
         print(f"[VERIFY] Video duration: {clip.duration:.2f}s")
