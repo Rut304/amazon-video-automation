@@ -1,8 +1,17 @@
 # create_video.py
 import os
+from typing import List, Dict
 from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
 
-def create_video(products: list, voice_path: str, seconds_per_image: int = 5) -> str:
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+VIDEOS_DIR = os.path.join(PROJECT_ROOT, "videos")
+
+
+def _abs_path(path: str) -> str:
+    return path if os.path.isabs(path) else os.path.join(PROJECT_ROOT, path)
+
+
+def create_video(products: List[Dict], voice_path: str, seconds_per_image: int = 5) -> str:
     """
     Creates a slideshow video from product images and attaches the provided voice audio.
     Returns the final video path: videos/final_video.mp4
@@ -12,23 +21,22 @@ def create_video(products: list, voice_path: str, seconds_per_image: int = 5) ->
 
     clips = []
     for product in products:
-        img_path = product["image_path"]
+        img_path = _abs_path(product["image_path"])
         if not os.path.exists(img_path):
             raise FileNotFoundError(f"Missing image: {img_path}")
-        # 1920-wide with aspect preserved; duration per image
         clip = ImageClip(img_path).set_duration(seconds_per_image).resize(width=1920)
         clips.append(clip)
 
     video = concatenate_videoclips(clips, method="compose").set_fps(30)
 
-    if not os.path.exists(voice_path):
-        raise FileNotFoundError(f"Missing audio file: {voice_path}")
+    vpath = _abs_path(voice_path)
+    if not os.path.exists(vpath):
+        raise FileNotFoundError(f"Missing audio file: {vpath}")
 
-    audio = AudioFileClip(voice_path)
-    # Trim/fit audio to video duration to avoid trailing silence or cutoff
+    audio = AudioFileClip(vpath)
+    # Fit audio to video duration if needed
     if audio.duration > video.duration:
         audio = audio.subclip(0, video.duration)
-    # Ensure consistent audio parameters
     try:
         audio = audio.set_fps(44100).set_channels(2)
     except Exception:
@@ -36,8 +44,8 @@ def create_video(products: list, voice_path: str, seconds_per_image: int = 5) ->
 
     video = video.set_audio(audio)
 
-    os.makedirs("videos", exist_ok=True)
-    output_path = "videos/final_video.mp4"
+    os.makedirs(VIDEOS_DIR, exist_ok=True)
+    output_path = os.path.join(VIDEOS_DIR, "final_video.mp4")
 
     video.write_videofile(
         output_path,
@@ -45,11 +53,11 @@ def create_video(products: list, voice_path: str, seconds_per_image: int = 5) ->
         codec="libx264",
         audio_codec="aac",
         audio_bitrate="192k",
-        temp_audiofile="temp-audio.m4a",
+        temp_audiofile=os.path.join(VIDEOS_DIR, "temp-audio.m4a"),
         remove_temp=True,
         threads=4,
         preset="medium",
-        verbose=False,
+        verbose=False
     )
 
     video.close()
