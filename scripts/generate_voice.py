@@ -5,7 +5,7 @@ import requests
 
 load_dotenv()
 
-# Check or prompt for API key
+# Fetch or prompt for API key
 api_key = os.getenv("ELEVENLABS_API_KEY")
 if not api_key:
     print("❌ ELEVENLABS_API_KEY is missing in environment variables or `.env` file.")
@@ -14,7 +14,7 @@ if not api_key:
         print("🚫 No API key provided. Exiting.")
         sys.exit(1)
 
-def generate_voice(text, voice_id="default"):
+def generate_voice(text, voice_id="default", filename="output.mp3"):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     headers = {
         "xi-api-key": api_key,
@@ -33,6 +33,6 @@ def generate_voice(text, voice_id="default"):
     if response.status_code != 200:
         raise RuntimeError(f"Voice generation failed: {response.text}")
 
-    with open("output.mp3", "wb") as f:
+    with open(filename, "wb") as f:
         f.write(response.content)
-    print("✅ Voice generated and saved to output.mp3")
+    print(f"✅ Voice generated and saved to {filename}")
