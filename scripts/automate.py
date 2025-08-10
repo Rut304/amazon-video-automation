@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from tts.elevenlabs import tts_to_file
+from scripts_loader import load_script, list_scripts
 
 # Load environment variables from .env
 load_dotenv()
@@ -30,7 +31,7 @@ def narrate(text: str, filename: str):
         print(f"[✓] Narration generated: {voice_path}")
         return voice_path
     except Exception as e:
-        print(f"[✗] Narration failed: {e}")
+        print(f"[✗] Narration failed for {filename}: {e}")
         raise
 
 def main():
@@ -38,13 +39,14 @@ def main():
     ensure_build_dirs()
     validate_env()
 
-    # 🎙️ Voice synthesis step
-    try:
-        narrate("This product is great for everyday use.", "product_intro")
-    except Exception:
-        sys.exit(1)
+    # 🎙️ Narrate all available scripts
+    for script_name in list_scripts():
+        try:
+            text = load_script(script_name)
+            narrate(text, script_name)
+        except Exception as e:
+            print(f"[✗] Skipping {script_name} due to error.")
 
-    # ✅ Future steps can go here (video rendering, upload, etc.)
     print("[✓] Pipeline complete.")
 
 if __name__ == "__main__":
