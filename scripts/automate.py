@@ -1,32 +1,32 @@
-from scripts.generate_voice import generate_voice
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from tts.elevenlabs import tts_to_file
+
+# Load environment variables
+load_dotenv()
+
+def ensure_dirs():
+    Path("build/narration").mkdir(parents=True, exist_ok=True)
 
 def main():
-    # Define tasks: text, voice ID, and output filename
-    tasks = [
-        {
-            "text": "Welcome to Jeff's fully automated affiliate channel!",
-            "voice_id": "your_voice_id_here",
-            "filename": "intro.mp3"
-        },
-        {
-            "text": "This product is one of our top picks for 2025.",
-            "voice_id": "your_voice_id_here",
-            "filename": "product_highlight.mp3"
-        },
-        {
-            "text": "Thanks for watching. Don’t forget to like and subscribe!",
-            "voice_id": "your_voice_id_here",
-            "filename": "outro.mp3"
-        }
-    ]
+    ensure_dirs()
 
-    # Run the generate_voice function for each task
-    for task in tasks:
-        try:
-            generate_voice(
-                text=task["text"],
-                voice_id=task["voice_id"],
-                filename=task["filename"]
-            )
-        except Exception as e:
-            print(f"⚠️ Failed to generate
+    try:
+        # 🎤 Voice generation step
+        voice_path = tts_to_file(
+            "This product is great for everyday use.",
+            out_path="build/narration/product_intro.mp3"
+        )
+        print(f"[✓] Voice narration saved to {voice_path}")
+
+    except Exception as e:
+        print(f"[✗] Voice generation failed: {e}")
+        return
+
+    # 🔁 Extendable pipeline steps
+    # e.g., video generation, thumbnail creation, upload...
+    print("[•] Pipeline complete ✅")
+
+if __name__ == "__main__":
+    main()
