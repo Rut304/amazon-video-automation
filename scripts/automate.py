@@ -40,3 +40,12 @@ def main():
 
     # 🎙️ Voice synthesis step
     try:
+        narrate("This product is great for everyday use.", "product_intro")
+    except Exception:
+        sys.exit(1)
+
+    # ✅ Future steps can go here (video rendering, upload, etc.)
+    print("[✓] Pipeline complete.")
+
+if __name__ == "__main__":
+    main()
