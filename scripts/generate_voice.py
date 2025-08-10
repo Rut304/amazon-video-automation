@@ -29,24 +29,4 @@ def generate_voice(script_text: str, voice_id="21m00Tcm4TlvDq8ikWAM") -> str:
             with open(mp3_path, "wb") as f:
                 f.write(resp.content)
             try:
-                clip = AudioFileClip(mp3_path)
-                if not clip.duration or clip.duration <= 0:
-                    raise ValueError("Voice file has zero duration")
-                print(f"[DEBUG] TTS duration: {clip.duration:.2f}s")
-
-                wav_path = "outputs/voice.wav"
-                clip.write_audiofile(
-                    wav_path,
-                    fps=44100,
-                    nbytes=2,
-                    codec="pcm_s16le"
-                )
-                clip.close()
-                return wav_path
-            except Exception as e:
-                print(f"[WARN] WAV conversion failed: {e}, using MP3 fallback")
-                return mp3_path
-        print(f"[WARN] Attempt {attempt+1} failed: {resp.status_code} - {resp.text[:100]}")
-        time.sleep(2 ** attempt)
-
-    raise Exception("Voice generation failed after retries")
+                clip = AudioFile
